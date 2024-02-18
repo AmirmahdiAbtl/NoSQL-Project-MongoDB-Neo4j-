@@ -134,5 +134,43 @@ results = collection_match.aggregate(query1)
 for result in results:
     pprint(result)
 ```
-<img src="/New Folder/First.drawio.png">
-![Page 1](New Folder/First.drawio.png)
+Neo4J Query Sample:
+```python
+from neo4j import GraphDatabase
+import pandas as pd
+
+def run_query(uri, user, password, query):
+    driver = GraphDatabase.driver(uri, auth=(user, password))
+
+    with driver.session() as session:
+        result = session.run(query)
+        return [record for record in result]
+
+uri = "neo4j://localhost:7687"  
+username = "neo4j"              
+password = "your_password"     
+
+query = """
+MATCH (m:Match)-[:INVOLVES]->(t:Team), (m)-[:PART_OF]->(l:League)
+WHERE l.name = "Belgium Jupiler League" AND m.season = "2008/2009"
+AND t.name IN ["RSC Anderlecht", "SV Zulte-Waregem"]
+WITH m, t
+MATCH (m)-[:HAS_PLAYER]->(p:Player)
+RETURN m.match_status AS MatchStatus, m.home_team_goal AS HomeTeamGoal, m.away_team_goal AS AwayTeamGoal,
+       collect(p.weight) AS PlayerWeights, 
+       [x IN collect(p) WHERE (x)-[:PLAYS_FOR]->(t) AND t.name = "RSC Anderlecht" | x.player_attribute.overall_rating] AS AnderlechtPlayerRatings,
+       [y IN collect(p) WHERE (y)-[:PLAYS_FOR]->(t) AND t.name = "SV Zulte-Waregem" | y.player_attribute.overall_rating] AS ZulteWaregemPlayerRatings,
+       collect(t.team_attribute.buildUpPlaySpeedClass) AS BuildUpPlaySpeedClasses, 
+       collect(t.team_attribute.buildUpPlayDribblingClass) AS BuildUpPlayDribblingClasses
+"""
+
+results = run_query(uri, username, password, query)
+
+df = pd.DataFrame([dict(record) for record in results])
+df
+
+```
+
+
+
+
