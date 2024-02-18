@@ -134,4 +134,4 @@ results = collection_match.aggregate(query1)
 for result in results:
     pprint(result)
 ```
-<img style="border: 4px solid #B7B7A4; border-radius: 15px; margin-bottom: 2.5rem" width = 900px src="new folder/First.drawio.png">
+<img src="/New Folder/First.drawio.png">
